@@ -36,8 +36,17 @@ object SparkSqlExample {
     import sqlContext.createSchemaRDD
     val people = sc.textFile("/Users/blahiri/spark/examples/src/main/resources/people.txt").map(_.split(",")).map(p => Person(p(0), p(1).trim.toInt))
     people.registerTempTable("people")
-    val teenagers = sqlContext.sql("SELECT name FROM people WHERE age >= 13 AND age <= 19")
-    teenagers.map(t => "Name: " + t(0)).collect().foreach(println)
+
+    val people1 = sc.textFile("/Users/blahiri/spark/examples/src/main/resources/people.txt").map(_.split(",")).map(p => Person(p(0), p(1).trim.toInt))
+    people.registerTempTable("people1")
+    
+    val union_all_people = people.unionAll(people1)
+    println(union_all_people.getClass) //org.apache.spark.sql.SchemaRDD
+    union_all_people.map(ua => "Name: " + ua(0)).collect().foreach(println)
+
+    val union_people = people.union(people1) 
+    union_people.map(up => "Name: " + up(0)).collect().foreach(println)
+    println(union_people.getClass) //the class is org.apache.spark.rdd.UnionRDD, which is a subclass of org.apache.spark.rdd.RDD
 
     sc.stop()
   }
