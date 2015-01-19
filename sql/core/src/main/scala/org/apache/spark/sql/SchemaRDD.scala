@@ -298,6 +298,23 @@ class SchemaRDD(
     new SchemaRDD(sqlContext, Union(logicalPlan, otherPlan.logicalPlan))
 
   /**
+   * Combines the tuples of two RDDs with the same schema, eliminating duplicates.
+   *
+   * @group Query
+   */
+  /*def union(otherPlan: SchemaRDD): SchemaRDD =
+    { 
+      logInfo("calling union in SchemaRDD")
+      (unionAll(otherPlan)).distinct()
+    }*/
+
+  override def union(other: RDD[Row]): SchemaRDD =
+  {
+    logInfo("calling union in SchemaRDD")
+    applySchema((super.union(other)).distinct())
+  }
+
+  /**
    * Performs a relational except on two SchemaRDDs
    *
    * @param otherPlan the [[SchemaRDD]] that should be excepted from this one.
@@ -493,7 +510,10 @@ class SchemaRDD(
     applySchema(super.filter(f))
 
   override def intersection(other: RDD[Row]): SchemaRDD =
+  {
+    logInfo("calling intersection in SchemaRDD")
     applySchema(super.intersection(other))
+  }
 
   override def intersection(other: RDD[Row], partitioner: Partitioner)
                            (implicit ord: Ordering[Row] = null): SchemaRDD =
